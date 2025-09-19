@@ -1,26 +1,86 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Primary Colors */
+  --midnight-blue: #1E1F3B;
+  --electric-purple: #8C4DFF;
+  --soft-white: #F5F5F5;
+  
+  /* Secondary Colors */
+  --neon-blue: #00D4FF;
+  --aqua-green: #2FFFC3;
+  --coral: #FF6B6B;
+  
+  /* Neutral Colors */
+  --dark-gray: #2C2C3A;
+  --light-gray: #E0E0E0;
+  --transparent-black: rgba(0,0,0,0.5);
+  
+  /* Status Colors */
+  --status-pending: var(--neon-blue);
+  --status-in-progress: var(--neon-blue);
+  --status-done: var(--aqua-green);
+  --status-overdue: var(--coral);
+  
+  /* Background and Text */
+  --background: var(--midnight-blue);
+  --foreground: var(--soft-white);
+  --card-background: var(--dark-gray);
+  --border-color: var(--light-gray);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-card: var(--card-background);
+  --color-border: var(--border-color);
+  
+  /* Primary Colors */
+  --color-midnight-blue: var(--midnight-blue);
+  --color-electric-purple: var(--electric-purple);
+  --color-soft-white: var(--soft-white);
+  
+  /* Secondary Colors */
+  --color-neon-blue: var(--neon-blue);
+  --color-aqua-green: var(--aqua-green);
+  --color-coral: var(--coral);
+  
+  /* Neutral Colors */
+  --color-dark-gray: var(--dark-gray);
+  --color-light-gray: var(--light-gray);
+  --color-transparent-black: var(--transparent-black);
+  
+  /* Status Colors */
+  --color-status-pending: var(--status-pending);
+  --color-status-in-progress: var(--status-in-progress);
+  --color-status-done: var(--status-done);
+  --color-status-overdue: var(--status-overdue);
+  
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  min-height: 100vh;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--dark-gray);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--electric-purple);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--neon-blue);
 }
