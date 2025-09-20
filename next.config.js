@@ -12,10 +12,12 @@ const nextConfig = {
   },
   // Performance optimizations
   experimental: {
-    optimizeCss: true,
+    // optimizeCss: true, // Disabled due to critters error
   },
   // Enable compression
   compress: true,
+  // Disable static optimization for problematic pages
+  trailingSlash: false,
   // Optimize images
   images: {
     domains: ['oljtlvscxjwkhjzzfhjn.supabase.co'],
