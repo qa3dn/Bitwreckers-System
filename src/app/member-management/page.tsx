@@ -63,7 +63,22 @@ export default function MemberManagementPage() {
 
   const fetchMemberIds = async () => {
     try {
-      // Fetch users with member IDs from users table
+      // First try to fetch from member_ids table
+      const { data: memberIdsData, error: memberIdsError } = await supabase
+        .from('member_ids')
+        .select(`
+          *,
+          user:users!member_ids_assigned_to_fkey(name, email)
+        `)
+        .order('created_at', { ascending: false })
+
+      if (!memberIdsError && memberIdsData) {
+        setMemberIds(memberIdsData)
+        setLoading(false)
+        return
+      }
+
+      // Fallback: Fetch users with member IDs from users table
       const { data, error } = await supabase
         .from('users')
         .select(`
@@ -123,9 +138,9 @@ export default function MemberManagementPage() {
         
         console.log('Generated member ID:', memberId)
 
-        // Check if this ID already exists
+        // Check if this ID already exists in member_ids table
         const { data: existing, error: checkError } = await supabase
-          .from('users')
+          .from('member_ids')
           .select('id')
           .eq('member_id', memberId)
           .single()
@@ -141,16 +156,14 @@ export default function MemberManagementPage() {
           continue
         }
 
-        // Create a placeholder user record (will be updated when real user signs up)
+        // Create member ID record in member_ids table
         const { error: insertError } = await supabase
-          .from('users')
+          .from('member_ids')
           .insert({
-            id: `temp-${Date.now()}-${i}`, // Temporary ID
-            name: `Placeholder User ${memberId}`,
-            email: `placeholder-${memberId}@example.com`,
             member_id: memberId,
             department: selectedDepartment,
-            role: 'member'
+            role: 'member',
+            created_by: userProfile?.id
           })
 
         if (insertError) {
@@ -175,6 +188,18 @@ export default function MemberManagementPage() {
     if (!confirm('Are you sure you want to delete this member ID?')) return
 
     try {
+      // Try to delete from member_ids table first
+      const { error: memberIdsError } = await supabase
+        .from('member_ids')
+        .delete()
+        .eq('id', id)
+
+      if (!memberIdsError) {
+        fetchMemberIds()
+        return
+      }
+
+      // Fallback: delete from users table
       const { error } = await supabase
         .from('users')
         .delete()
