@@ -22,13 +22,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let isMounted = true
-    // Set a timeout to stop loading after 3 seconds
+    // Set a timeout to stop loading after 2 seconds
     const timeoutId = setTimeout(() => {
       if (isMounted) {
         console.log('AuthContext: Timeout reached, stopping loading')
         setLoading(false)
       }
-    }, 3000)
+    }, 2000)
 
     const getUser = async () => {
       try {
@@ -58,9 +58,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setLoading(false)
             return
           }
-        }
-        
-        if (user) {
+          
+          // Only proceed if user exists
+          if (user) {
           try {
             const { data: profile, error: profileError } = await supabase
               .from('users')
@@ -97,6 +97,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           } catch (error) {
             console.error('Error getting user profile:', error)
           }
+          }
         }
       } catch (error) {
         console.error('Error getting user:', error)
@@ -127,7 +128,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         setUser(session?.user ?? null)
         
-        if (session?.user) {
+        if (session?.user && isMounted) {
           try {
             const { data: profile, error: profileError } = await supabase
               .from('users')

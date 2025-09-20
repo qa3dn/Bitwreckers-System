@@ -93,6 +93,7 @@ export default function Dashboard() {
         <div className="text-center" suppressHydrationWarning={true}>
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-electric-purple mx-auto mb-4"></div>
           <div className="text-soft-white">Loading...</div>
+          <div className="text-light-gray text-sm mt-2">If this takes too long, please refresh the page</div>
         </div>
       </div>
     )
