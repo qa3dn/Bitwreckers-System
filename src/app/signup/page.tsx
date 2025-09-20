@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { EyeIcon, EyeSlashIcon, UserIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import MemberIdStatus from '@/components/MemberIdStatus'
 
 export default function SignUpPage() {
   const [formData, setFormData] = useState({
@@ -43,7 +44,7 @@ export default function SignUpPage() {
       // Check if member ID is already assigned to another user
       const { data: existingUser, error } = await supabase
         .from('users')
-        .select('id, member_id')
+        .select('id, member_id, email, name')
         .eq('member_id', memberId)
         .single()
 
@@ -58,6 +59,7 @@ export default function SignUpPage() {
         // Member ID is already assigned
         setMemberIdStatus('invalid')
         setMemberIdInfo(null)
+        setError(`Member ID ${memberId} is already assigned to ${existingUser.email}`)
         return
       }
 
@@ -86,6 +88,7 @@ export default function SignUpPage() {
         department: department,
         role: role
       })
+      setError('') // Clear any previous errors
     } catch (error) {
       setMemberIdStatus('invalid')
       setMemberIdInfo(null)
@@ -250,9 +253,16 @@ export default function SignUpPage() {
                 </div>
               )}
               {memberIdStatus === 'invalid' && (
-                <p className="mt-2 text-sm text-red-400">
-                  Invalid Member ID or already in use
-                </p>
+                <div className="mt-2 p-3 bg-red-500/10 border border-red-500/20 rounded-md">
+                  <p className="text-sm text-red-400">
+                    Invalid Member ID or already in use
+                  </p>
+                </div>
+              )}
+              {formData.memberId && memberIdStatus === 'idle' && (
+                <div className="mt-2">
+                  <MemberIdStatus memberId={formData.memberId} />
+                </div>
               )}
             </div>
             
