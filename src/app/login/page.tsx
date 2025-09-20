@@ -34,8 +34,12 @@ export default function LoginPage() {
         setError(error.message)
       } else {
         console.log('Sign in successful, redirecting...')
-        router.push('/')
-        router.refresh()
+        // Clear any cached data
+        if (typeof window !== 'undefined') {
+          sessionStorage.clear()
+        }
+        // Force refresh
+        window.location.href = '/'
       }
     } catch (err) {
       console.error('Unexpected error:', err)

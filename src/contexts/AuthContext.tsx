@@ -22,20 +22,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let isMounted = true
-    // Set a timeout to stop loading after 5 seconds
+    // Set a timeout to stop loading after 3 seconds
     const timeoutId = setTimeout(() => {
       if (isMounted) {
         console.log('AuthContext: Timeout reached, stopping loading')
         setLoading(false)
       }
-    }, 5000)
+    }, 3000)
 
     const getUser = async () => {
       try {
+        // Clear any cached session first
+        await supabase.auth.getSession()
+        
         const { data: { user }, error } = await supabase.auth.getUser()
         
         if (error) {
           console.error('Error getting user:', error)
+          // Clear local storage on error
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('supabase.auth.token')
+            sessionStorage.clear()
+          }
           if (isMounted) {
             setUser(null)
             setUserProfile(null)
@@ -107,6 +115,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       async (event, session) => {
         if (!isMounted) return
         
+        console.log('Auth state change:', event, session?.user?.id)
+        
+        // Clear cache on sign out
+        if (event === 'SIGNED_OUT') {
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('supabase.auth.token')
+            sessionStorage.clear()
+          }
+        }
+        
         setUser(session?.user ?? null)
         
         if (session?.user) {
@@ -165,7 +183,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const signOut = async () => {
-    await supabase.auth.signOut()
+    try {
+      await supabase.auth.signOut()
+      // Clear all cached data
+      if (typeof window !== 'undefined') {
+        localStorage.clear()
+        sessionStorage.clear()
+      }
+      // Force page reload to clear all state
+      window.location.href = '/login'
+    } catch (error) {
+      console.error('Error signing out:', error)
+    }
   }
 
   const value = {
