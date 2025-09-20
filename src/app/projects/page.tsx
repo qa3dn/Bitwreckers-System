@@ -12,16 +12,32 @@ import {
   MagnifyingGlassIcon,
   FunnelIcon,
   CalendarIcon,
-  UserIcon
+  UserIcon,
+  PencilIcon,
+  TrashIcon,
+  UserPlusIcon,
+  UserMinusIcon,
+  EyeIcon
 } from '@heroicons/react/24/outline'
 import Link from 'next/link'
 
 export default function ProjectsPage() {
-  const { user, loading: authLoading } = useAuth()
+  const { user, userProfile, loading: authLoading } = useAuth()
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [editingProject, setEditingProject] = useState<Project | null>(null)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [showMembersModal, setShowMembersModal] = useState(false)
+  const [projectMembers, setProjectMembers] = useState<any[]>([])
+  const [allUsers, setAllUsers] = useState<any[]>([])
+  const [editForm, setEditForm] = useState({
+    name: '',
+    description: '',
+    status: '',
+    project_manager: ''
+  })
   const supabase = createClient()
 
   useEffect(() => {
@@ -34,7 +50,16 @@ export default function ProjectsPage() {
     try {
       const { data, error } = await supabase
         .from('projects')
-        .select('*')
+        .select(`
+          *,
+          project_manager:users!projects_project_manager_fkey(name, email),
+          project_members:project_members(
+            id,
+            user_id,
+            role,
+            user:users(name, email, member_id)
+          )
+        `)
         .order('created_at', { ascending: false })
 
       if (error) {
@@ -46,6 +71,160 @@ export default function ProjectsPage() {
       console.error('Error fetching projects:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchAllUsers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('id, name, email, member_id, role')
+        .order('name')
+
+      if (error) {
+        console.error('Error fetching users:', error)
+      } else {
+        setAllUsers(data || [])
+      }
+    } catch (error) {
+      console.error('Error fetching users:', error)
+    }
+  }
+
+  const handleEditProject = (project: Project) => {
+    setEditingProject(project)
+    setEditForm({
+      name: project.name,
+      description: project.description || '',
+      status: project.status,
+      project_manager: project.project_manager || ''
+    })
+    setShowEditModal(true)
+  }
+
+  const handleUpdateProject = async () => {
+    if (!editingProject) return
+
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .update({
+          name: editForm.name,
+          description: editForm.description,
+          status: editForm.status,
+          project_manager: editForm.project_manager
+        })
+        .eq('id', editingProject.id)
+
+      if (error) throw error
+
+      setShowEditModal(false)
+      setEditingProject(null)
+      fetchProjects()
+      alert('Project updated successfully!')
+    } catch (error) {
+      console.error('Error updating project:', error)
+      alert('Error updating project')
+    }
+  }
+
+  const handleDeleteProject = async (projectId: string) => {
+    if (!confirm('Are you sure you want to delete this project? This action cannot be undone.')) return
+
+    try {
+      // First delete project members
+      const { error: membersError } = await supabase
+        .from('project_members')
+        .delete()
+        .eq('project_id', projectId)
+
+      if (membersError) {
+        console.error('Error deleting project members:', membersError)
+      }
+
+      // Then delete the project
+      const { error } = await supabase
+        .from('projects')
+        .delete()
+        .eq('id', projectId)
+
+      if (error) throw error
+
+      fetchProjects()
+      alert('Project deleted successfully!')
+    } catch (error) {
+      console.error('Error deleting project:', error)
+      alert('Error deleting project')
+    }
+  }
+
+  const handleManageMembers = async (project: Project) => {
+    setEditingProject(project)
+    setProjectMembers(project.project_members || [])
+    setShowMembersModal(true)
+    await fetchAllUsers()
+  }
+
+  const handleAddMember = async (userId: string) => {
+    if (!editingProject) return
+
+    try {
+      const { error } = await supabase
+        .from('project_members')
+        .insert({
+          project_id: editingProject.id,
+          user_id: userId,
+          role: 'member'
+        })
+
+      if (error) throw error
+
+      // Refresh project members
+      const { data } = await supabase
+        .from('project_members')
+        .select(`
+          id,
+          user_id,
+          role,
+          user:users(name, email, member_id)
+        `)
+        .eq('project_id', editingProject.id)
+
+      setProjectMembers(data || [])
+      fetchProjects()
+    } catch (error) {
+      console.error('Error adding member:', error)
+      alert('Error adding member')
+    }
+  }
+
+  const handleRemoveMember = async (memberId: string) => {
+    if (!confirm('Are you sure you want to remove this member from the project?')) return
+
+    try {
+      const { error } = await supabase
+        .from('project_members')
+        .delete()
+        .eq('id', memberId)
+
+      if (error) throw error
+
+      // Refresh project members
+      const { data } = await supabase
+        .from('project_members')
+        .select(`
+          id,
+          user_id,
+          role,
+          user:users(name, email, member_id)
+        `)
+        .eq('project_id', editingProject?.id)
+
+      setProjectMembers(data || [])
+      fetchProjects()
+    } catch (error) {
+      console.error('Error removing member:', error)
+      alert('Error removing member')
     }
   }
 
@@ -162,9 +341,36 @@ export default function ProjectsPage() {
                     </p>
                   </div>
                 </div>
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(project.status)}`}>
-                  {getStatusText(project.status)}
-                </span>
+                <div className="flex items-center space-x-2">
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(project.status)}`}>
+                    {getStatusText(project.status)}
+                  </span>
+                  {userProfile?.role === 'team_leader' && (
+                    <div className="flex space-x-1">
+                      <button
+                        onClick={() => handleEditProject(project)}
+                        className="p-1 text-blue-500 hover:bg-blue-500/10 rounded transition-colors"
+                        title="Edit Project"
+                      >
+                        <PencilIcon className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => handleManageMembers(project)}
+                        className="p-1 text-green-500 hover:bg-green-500/10 rounded transition-colors"
+                        title="Manage Members"
+                      >
+                        <UserPlusIcon className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteProject(project.id)}
+                        className="p-1 text-red-500 hover:bg-red-500/10 rounded transition-colors"
+                        title="Delete Project"
+                      >
+                        <TrashIcon className="h-4 w-4" />
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
               
               {project.description && (
@@ -208,6 +414,168 @@ export default function ProjectsPage() {
                 Create Project
               </Link>
             )}
+          </div>
+        )}
+
+        {/* Edit Project Modal */}
+        {showEditModal && editingProject && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-dark-gray p-6 rounded-lg w-full max-w-md mx-4">
+              <h3 className="text-xl font-bold text-soft-white mb-4">Edit Project</h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-light-gray mb-2">
+                    Project Name
+                  </label>
+                  <input
+                    type="text"
+                    value={editForm.name}
+                    onChange={(e) => setEditForm({...editForm, name: e.target.value})}
+                    className="w-full px-4 py-2 bg-midnight-blue text-soft-white rounded-lg border border-gray-600 focus:border-electric-purple focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-light-gray mb-2">
+                    Description
+                  </label>
+                  <textarea
+                    value={editForm.description}
+                    onChange={(e) => setEditForm({...editForm, description: e.target.value})}
+                    rows={3}
+                    className="w-full px-4 py-2 bg-midnight-blue text-soft-white rounded-lg border border-gray-600 focus:border-electric-purple focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-light-gray mb-2">
+                    Status
+                  </label>
+                  <select
+                    value={editForm.status}
+                    onChange={(e) => setEditForm({...editForm, status: e.target.value})}
+                    className="w-full px-4 py-2 bg-midnight-blue text-soft-white rounded-lg border border-gray-600 focus:border-electric-purple focus:outline-none"
+                  >
+                    <option value="planning">Planning</option>
+                    <option value="in_progress">In Progress</option>
+                    <option value="on_hold">On Hold</option>
+                    <option value="completed">Completed</option>
+                    <option value="cancelled">Cancelled</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-light-gray mb-2">
+                    Project Manager
+                  </label>
+                  <select
+                    value={editForm.project_manager}
+                    onChange={(e) => setEditForm({...editForm, project_manager: e.target.value})}
+                    className="w-full px-4 py-2 bg-midnight-blue text-soft-white rounded-lg border border-gray-600 focus:border-electric-purple focus:outline-none"
+                  >
+                    <option value="">Select Project Manager</option>
+                    {allUsers.map(user => (
+                      <option key={user.id} value={user.id}>
+                        {user.name} ({user.member_id})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={handleUpdateProject}
+                  className="flex-1 bg-electric-purple text-soft-white px-4 py-2 rounded-lg hover:bg-purple-600 transition-colors"
+                >
+                  Update Project
+                </button>
+                <button
+                  onClick={() => {
+                    setShowEditModal(false)
+                    setEditingProject(null)
+                  }}
+                  className="flex-1 bg-gray-600 text-soft-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Manage Members Modal */}
+        {showMembersModal && editingProject && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-dark-gray p-6 rounded-lg w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto">
+              <h3 className="text-xl font-bold text-soft-white mb-4">
+                Manage Members - {editingProject.name}
+              </h3>
+              
+              {/* Current Members */}
+              <div className="mb-6">
+                <h4 className="text-lg font-semibold text-soft-white mb-3">Current Members</h4>
+                <div className="space-y-2">
+                  {projectMembers.map(member => (
+                    <div key={member.id} className="flex items-center justify-between bg-midnight-blue p-3 rounded-lg">
+                      <div>
+                        <div className="text-soft-white font-medium">{member.user.name}</div>
+                        <div className="text-light-gray text-sm">{member.user.email} ({member.user.member_id})</div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-xs bg-electric-purple text-soft-white px-2 py-1 rounded">
+                          {member.role}
+                        </span>
+                        <button
+                          onClick={() => handleRemoveMember(member.id)}
+                          className="p-1 text-red-500 hover:bg-red-500/10 rounded transition-colors"
+                          title="Remove Member"
+                        >
+                          <UserMinusIcon className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Add New Member */}
+              <div>
+                <h4 className="text-lg font-semibold text-soft-white mb-3">Add New Member</h4>
+                <div className="space-y-2">
+                  {allUsers
+                    .filter(user => !projectMembers.some(member => member.user_id === user.id))
+                    .map(user => (
+                      <div key={user.id} className="flex items-center justify-between bg-midnight-blue p-3 rounded-lg">
+                        <div>
+                          <div className="text-soft-white font-medium">{user.name}</div>
+                          <div className="text-light-gray text-sm">{user.email} ({user.member_id})</div>
+                        </div>
+                        <button
+                          onClick={() => handleAddMember(user.id)}
+                          className="p-1 text-green-500 hover:bg-green-500/10 rounded transition-colors"
+                          title="Add Member"
+                        >
+                          <UserPlusIcon className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ))}
+                </div>
+              </div>
+
+              <div className="flex justify-end mt-6">
+                <button
+                  onClick={() => {
+                    setShowMembersModal(false)
+                    setEditingProject(null)
+                  }}
+                  className="px-4 py-2 bg-gray-600 text-soft-white rounded-lg hover:bg-gray-700 transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>
