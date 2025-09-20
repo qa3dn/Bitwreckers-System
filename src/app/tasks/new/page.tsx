@@ -141,8 +141,26 @@ export default function NewTaskPage() {
 
       if (error) {
         console.error('Error creating task:', error)
-        alert('Error creating task')
+        alert(`Error creating task: ${error.message || 'Unknown error'}`)
         return
+      }
+
+      // Create notification for assigned user
+      const { error: notificationError } = await supabase
+        .from('notifications')
+        .insert({
+          user_id: formData.assigned_to,
+          title: 'New Task Assigned',
+          message: `You have been assigned a new task: ${formData.title}`,
+          type: 'task_assigned',
+          data: {
+            task_id: data?.id,
+            project_id: formData.project_id
+          }
+        })
+
+      if (notificationError) {
+        console.error('Error creating notification:', notificationError)
       }
 
       alert('Task created successfully!')
