@@ -73,9 +73,12 @@ export default function Dashboard() {
 
   if (authLoading || loading) {
     console.log('Loading state:', { authLoading, loading, user })
-  return (
+    return (
       <div className="min-h-screen bg-midnight-blue flex items-center justify-center" suppressHydrationWarning={true}>
-        <div className="text-soft-white" suppressHydrationWarning={true}>Loading...</div>
+        <div className="text-center" suppressHydrationWarning={true}>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-electric-purple mx-auto mb-4"></div>
+          <div className="text-soft-white">Loading...</div>
+        </div>
       </div>
     )
   }

@@ -22,13 +22,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let isMounted = true
-    // Set a timeout to stop loading after 5 seconds
+    // Set a timeout to stop loading after 10 seconds
     const timeoutId = setTimeout(() => {
       if (isMounted) {
         console.log('AuthContext: Timeout reached, stopping loading')
         setLoading(false)
       }
-    }, 5000)
+    }, 10000)
 
     const getUser = async () => {
       try {
@@ -46,7 +46,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
         
         console.log('AuthContext: User found:', user)
-        if (isMounted) setUser(user)
+        if (isMounted) {
+          setUser(user)
+          if (!user) {
+            setUserProfile(null)
+            setLoading(false)
+            return
+          }
+        }
         
         if (user) {
           try {

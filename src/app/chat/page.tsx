@@ -33,7 +33,8 @@ import {
   ArchiveBoxIcon,
   TrashIcon,
   PencilIcon,
-  ShareIcon
+  ShareIcon,
+  Bars3Icon
 } from '@heroicons/react/24/outline'
 import { useAppKeyboardShortcuts, useChatKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
 
@@ -64,6 +65,7 @@ export default function ChatPage() {
   const [loading, setLoading] = useState(true)
   const [unreadCount, setUnreadCount] = useState(0)
   const [lastReadMessageId, setLastReadMessageId] = useState<string | null>(null)
+  const [showMobileSidebar, setShowMobileSidebar] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const supabase = createClient()
@@ -405,14 +407,15 @@ export default function ChatPage() {
     <DashboardLayout>
       <div className="h-screen flex bg-midnight-blue">
         {/* Mobile Sidebar */}
-        <div className="lg:hidden fixed inset-0 z-50 bg-midnight-blue">
-          <div className="w-80 h-full bg-dark-gray border-r border-gray-700 flex flex-col">
+        {showMobileSidebar && (
+          <div className="lg:hidden fixed inset-0 z-50 bg-midnight-blue">
+            <div className="w-80 h-full bg-dark-gray border-r border-gray-700 flex flex-col">
             {/* Mobile Header */}
             <div className="p-4 border-b border-gray-700">
               <div className="flex items-center justify-between mb-4">
                 <h1 className="text-xl font-bold text-soft-white">Messages</h1>
                 <button 
-                  onClick={() => {/* Close mobile sidebar */}}
+                  onClick={() => setShowMobileSidebar(false)}
                   className="p-2 text-light-gray hover:text-electric-purple transition-colors rounded-lg hover:bg-midnight-blue"
                 >
                   <XMarkIcon className="h-5 w-5" />
@@ -554,6 +557,7 @@ export default function ChatPage() {
             </div>
           </div>
         </div>
+        )}
 
         {/* Desktop Sidebar */}
         <div className="hidden lg:flex w-80 bg-dark-gray border-r border-gray-700 flex-col">
@@ -731,6 +735,14 @@ export default function ChatPage() {
           {/* Chat Header */}
           <div className="bg-dark-gray border-b border-gray-700 p-3 md:p-4 flex items-center justify-between">
             <div className="flex items-center flex-1 min-w-0">
+              {/* Mobile Menu Button */}
+              <button
+                onClick={() => setShowMobileSidebar(true)}
+                className="lg:hidden p-2 text-light-gray hover:text-electric-purple transition-colors rounded-lg hover:bg-midnight-blue mr-2"
+              >
+                <Bars3Icon className="h-5 w-5" />
+              </button>
+              
               <div className="w-8 h-8 md:w-12 md:h-12 bg-gradient-to-br from-electric-purple to-neon-blue rounded-full flex items-center justify-center mr-2 md:mr-4 flex-shrink-0">
                 <span className="text-sm md:text-lg font-bold">{getInitials(getChatTitle())}</span>
               </div>
