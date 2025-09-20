@@ -191,6 +191,8 @@ export default function ChatPage() {
 
   const fetchMessages = async () => {
     try {
+      if (!user?.id) return
+
       let query = supabase
         .from('messages')
         .select(`
@@ -202,15 +204,45 @@ export default function ChatPage() {
         .order('created_at', { ascending: true })
 
       if (chatMode === 'company') {
+        // Company chat: only messages with no specific receiver and no project
         query = query.is('project_id', null).is('receiver_id', null)
       } else if (chatMode === 'project' && selectedProject) {
+        // Project chat: only messages for this specific project
         query = query.eq('project_id', selectedProject.id).is('receiver_id', null)
       } else if (chatMode === 'direct' && selectedUser) {
-        query = query.or(`and(sender_id.eq.${user?.id},receiver_id.eq.${selectedUser.id}),and(sender_id.eq.${selectedUser.id},receiver_id.eq.${user?.id})`)
+        // Direct messages: only between current user and selected user
+        query = query.or(`and(sender_id.eq.${user.id},receiver_id.eq.${selectedUser.id}),and(sender_id.eq.${selectedUser.id},receiver_id.eq.${user.id})`)
       }
 
-      const { data: messagesData } = await query
-      setMessages(messagesData || [])
+      const { data: messagesData, error } = await query
+      
+      if (error) {
+        console.error('Error fetching messages:', error)
+        return
+      }
+
+      // Additional client-side filtering for extra security
+      const filteredMessages = (messagesData || []).filter(message => {
+        if (chatMode === 'company') {
+          return !message.project_id && !message.receiver_id
+        } else if (chatMode === 'project' && selectedProject) {
+          return message.project_id === selectedProject.id && !message.receiver_id
+        } else if (chatMode === 'direct' && selectedUser) {
+          return (message.sender_id === user.id && message.receiver_id === selectedUser.id) ||
+                 (message.sender_id === selectedUser.id && message.receiver_id === user.id)
+        }
+        return false
+      })
+
+      console.log(`Fetched ${filteredMessages.length} messages for ${chatMode} mode`, {
+        chatMode,
+        selectedProject: selectedProject?.name,
+        selectedUser: selectedUser?.name,
+        totalMessages: messagesData?.length || 0,
+        filteredMessages: filteredMessages.length
+      })
+      
+      setMessages(filteredMessages)
     } catch (error) {
       console.error('Error fetching messages:', error)
     }
