@@ -8,6 +8,8 @@ import QuickActions from '@/components/QuickActions'
 import PinnedProjects from '@/components/PinnedProjects'
 import { createClient } from '@/lib/supabase/client'
 import { Project, Task } from '@/types/database'
+import ClearCacheButton from '@/components/ClearCacheButton'
+import SessionDebug from '@/components/SessionDebug'
 import { 
   FolderIcon, 
   CheckIcon,
@@ -134,16 +136,21 @@ export default function Dashboard() {
       <div className="space-y-4 md:space-y-6 px-2 md:px-0">
         {/* Welcome Section */}
         <div className="bg-dark-gray rounded-lg p-4 md:p-6">
-          <h1 className="text-xl md:text-2xl font-bold text-soft-white mb-2">
-            Welcome back, {user.user_metadata?.name || 'User'}!
-          </h1>
-          <p className="text-light-gray text-sm md:text-base">
-            Here's what's happening with your projects today.
-          </p>
-          <p className="text-xs md:text-sm text-light-gray mt-2 hidden md:block">
-            Press <kbd className="px-2 py-1 bg-midnight-blue rounded text-xs">Ctrl+K</kbd> to search, 
-            <kbd className="px-2 py-1 bg-midnight-blue rounded text-xs ml-1">Ctrl+N</kbd> for new task
-          </p>
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-xl md:text-2xl font-bold text-soft-white mb-2">
+                Welcome back, {user.user_metadata?.name || 'User'}!
+              </h1>
+              <p className="text-light-gray text-sm md:text-base">
+                Here's what's happening with your projects today.
+              </p>
+              <p className="text-xs md:text-sm text-light-gray mt-2 hidden md:block">
+                Press <kbd className="px-2 py-1 bg-midnight-blue rounded text-xs">Ctrl+K</kbd> to search, 
+                <kbd className="px-2 py-1 bg-midnight-blue rounded text-xs ml-1">Ctrl+N</kbd> for new task
+              </p>
+            </div>
+            <ClearCacheButton />
+          </div>
         </div>
 
         {/* Quick Actions */}
@@ -298,7 +305,10 @@ export default function Dashboard() {
 
         {/* Activity Feed */}
         <ActivityFeed />
-    </div>
+      </div>
+      
+      {/* Debug Component */}
+      <SessionDebug />
     </DashboardLayout>
   )
 }

@@ -1,9 +1,19 @@
 'use client'
 
 import { createContext, useContext, useEffect, useState } from 'react'
-import { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
-import { User as DatabaseUser } from '@/types/database'
+import { User } from '@supabase/supabase-js'
+
+interface DatabaseUser {
+  id: string
+  name: string
+  email: string
+  role: string
+  department: string
+  member_id: string
+  created_at: string
+  updated_at: string
+}
 
 interface AuthContextType {
   user: User | null
@@ -22,28 +32,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let isMounted = true
-    // Set a timeout to stop loading after 2 seconds
-    const timeoutId = setTimeout(() => {
-      if (isMounted) {
-        console.log('AuthContext: Timeout reached, stopping loading')
-        setLoading(false)
-      }
-    }, 2000)
+    let timeoutId: NodeJS.Timeout
 
-    const getUser = async () => {
+    const initializeAuth = async () => {
       try {
         // Clear any cached session first
         await supabase.auth.getSession()
-        
+
         const { data: { user }, error } = await supabase.auth.getUser()
         
         if (error) {
           console.error('Error getting user:', error)
-          // Clear local storage on error
-          if (typeof window !== 'undefined') {
-            localStorage.removeItem('supabase.auth.token')
-            sessionStorage.clear()
-          }
+          // Clear any invalid session
           if (isMounted) {
             setUser(null)
             setUserProfile(null)
@@ -51,6 +51,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
           return
         }
+
         if (isMounted) {
           setUser(user)
           if (!user) {
@@ -59,8 +60,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             return
           }
           
-          // Only proceed if user exists
-          if (user) {
+          // Fetch user profile
           try {
             const { data: profile, error: profileError } = await supabase
               .from('users')
@@ -97,20 +97,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           } catch (error) {
             console.error('Error getting user profile:', error)
           }
-          }
         }
       } catch (error) {
-        console.error('Error getting user:', error)
+        console.error('Error initializing auth:', error)
       } finally {
-        console.log('AuthContext: Setting loading to false')
         if (isMounted) {
-          clearTimeout(timeoutId)
           setLoading(false)
         }
       }
     }
 
-    getUser()
+    // Set a timeout to stop loading after 3 seconds
+    timeoutId = setTimeout(() => {
+      if (isMounted) {
+        console.log('AuthContext: Timeout reached, stopping loading')
+        setLoading(false)
+      }
+    }, 3000)
+
+    initializeAuth()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
@@ -124,6 +129,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             localStorage.removeItem('supabase.auth.token')
             sessionStorage.clear()
           }
+          setUser(null)
+          setUserProfile(null)
+          return
         }
         
         setUser(session?.user ?? null)
@@ -168,11 +176,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } else if (isMounted) {
           setUserProfile(null)
         }
-        
-        if (isMounted) {
-          clearTimeout(timeoutId)
-          setLoading(false)
-        }
       }
     )
 
@@ -186,27 +189,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = async () => {
     try {
       await supabase.auth.signOut()
-      // Clear all cached data
+      // Clear all local storage
       if (typeof window !== 'undefined') {
         localStorage.clear()
         sessionStorage.clear()
       }
-      // Force page reload to clear all state
+      // Force reload to clear any cached state
       window.location.href = '/login'
     } catch (error) {
       console.error('Error signing out:', error)
     }
   }
 
-  const value = {
-    user,
-    userProfile,
-    loading,
-    signOut
-  }
-
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={{ user, userProfile, loading, signOut }}>
       {children}
     </AuthContext.Provider>
   )
