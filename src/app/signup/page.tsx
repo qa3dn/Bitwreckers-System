@@ -25,9 +25,12 @@ export default function SignUpPage() {
   const supabase = createClient()
 
   const validateMemberId = async (memberId: string) => {
+    console.log('Validating Member ID:', memberId)
+    
     if (!memberId.trim()) {
       setMemberIdStatus('idle')
       setMemberIdInfo(null)
+      setError('')
       return
     }
 
@@ -35,10 +38,12 @@ export default function SignUpPage() {
     if (!memberId.match(/^[A-Z]{2,3}-[0-9]{4}$/)) {
       setMemberIdStatus('invalid')
       setMemberIdInfo(null)
+      setError('Invalid format. Use format like PR-1234, DS-1234, etc.')
       return
     }
 
     setMemberIdStatus('checking')
+    setError('')
     
     try {
       // Check if member ID is already assigned to another user
@@ -49,9 +54,11 @@ export default function SignUpPage() {
         .single()
 
       if (error && error.code !== 'PGRST116') {
-        // Error other than "not found"
+        // Error other than "not found" - database error
+        console.error('Database error checking member ID:', error)
         setMemberIdStatus('invalid')
         setMemberIdInfo(null)
+        setError('Error checking Member ID. Please try again.')
         return
       }
 
@@ -80,9 +87,12 @@ export default function SignUpPage() {
       } else {
         setMemberIdStatus('invalid')
         setMemberIdInfo(null)
+        setError('Invalid department prefix. Use PR-, DS-, MK-, MG-, or GN-')
         return
       }
 
+      // Member ID is available and valid
+      console.log('Member ID validation successful:', { memberId, department, role })
       setMemberIdStatus('valid')
       setMemberIdInfo({
         department: department,
@@ -90,8 +100,10 @@ export default function SignUpPage() {
       })
       setError('') // Clear any previous errors
     } catch (error) {
+      console.error('Error validating member ID:', error)
       setMemberIdStatus('invalid')
       setMemberIdInfo(null)
+      setError('Error checking Member ID. Please try again.')
     }
   }
 
@@ -131,7 +143,13 @@ export default function SignUpPage() {
     }
 
     if (memberIdStatus !== 'valid') {
-      setError('Invalid member ID or already in use')
+      if (memberIdStatus === 'invalid') {
+        setError('Please enter a valid Member ID')
+      } else if (memberIdStatus === 'checking') {
+        setError('Please wait while we check your Member ID')
+      } else {
+        setError('Please enter a valid Member ID')
+      }
       setLoading(false)
       return
     }
