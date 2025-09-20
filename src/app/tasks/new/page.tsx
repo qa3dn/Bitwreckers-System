@@ -123,9 +123,10 @@ export default function NewTaskPage() {
     }
 
     setSaving(true)
+    console.log('Creating task with data:', formData)
 
     try {
-      const { error } = await supabase
+      const { data: taskData, error } = await supabase
         .from('tasks')
         .insert({
           project_id: formData.project_id,
@@ -138,12 +139,16 @@ export default function NewTaskPage() {
           created_by: userProfile.id,
           status: 'todo'
         })
+        .select()
+        .single()
 
       if (error) {
         console.error('Error creating task:', error)
         alert(`Error creating task: ${error.message || 'Unknown error'}`)
         return
       }
+
+      console.log('Task created successfully:', taskData)
 
       // Create notification for assigned user
       const { error: notificationError } = await supabase
@@ -154,7 +159,7 @@ export default function NewTaskPage() {
           message: `You have been assigned a new task: ${formData.title}`,
           type: 'task_assigned',
           data: {
-            task_id: data?.id,
+            task_id: taskData?.id,
             project_id: formData.project_id
           }
         })
@@ -178,9 +183,9 @@ export default function NewTaskPage() {
 
       // Redirect to tasks page
       window.location.href = '/tasks'
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating task:', error)
-      alert('Error creating task')
+      alert(`Error creating task: ${error.message || 'Unknown error occurred'}`)
     } finally {
       setSaving(false)
     }
