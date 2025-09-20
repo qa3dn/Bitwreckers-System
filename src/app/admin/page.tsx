@@ -328,7 +328,7 @@ export default function AdminPage() {
 
       if (meetingError) {
         console.error('Error creating meeting:', meetingError)
-        alert('Error creating meeting')
+        alert(`Error creating meeting: ${meetingError.message || 'Unknown error'}`)
         return
       }
 

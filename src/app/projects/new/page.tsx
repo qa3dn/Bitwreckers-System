@@ -80,17 +80,27 @@ export default function NewProjectPage() {
         .single()
 
       if (projectError) {
-        throw projectError
+        console.error('Error creating project:', projectError)
+        setError(`Failed to create project: ${projectError.message || 'Unknown error'}`)
+        setLoading(false)
+        return
       }
 
       // Add project manager
-      await supabase
+      const { error: managerError } = await supabase
         .from('project_members')
         .insert({
           project_id: project.id,
           user_id: projectManager.id,
           role: 'project-manager'
         })
+
+      if (managerError) {
+        console.error('Error adding project manager:', managerError)
+        setError(`Failed to add project manager: ${managerError.message || 'Unknown error'}`)
+        setLoading(false)
+        return
+      }
 
       // Add other members
       if (selectedMembers.length > 0) {
@@ -103,9 +113,16 @@ export default function NewProjectPage() {
           }))
 
         if (memberInserts.length > 0) {
-          await supabase
+          const { error: membersError } = await supabase
             .from('project_members')
             .insert(memberInserts)
+
+          if (membersError) {
+            console.error('Error adding project members:', membersError)
+            setError(`Failed to add project members: ${membersError.message || 'Unknown error'}`)
+            setLoading(false)
+            return
+          }
         }
       }
 
