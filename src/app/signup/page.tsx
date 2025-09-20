@@ -46,10 +46,18 @@ export default function SignUpPage() {
     setError('')
     
     try {
-      // Check if member ID is already assigned to another user
-      const { data: existingUser, error } = await supabase
-        .from('users')
-        .select('id, member_id, email, name')
+      // Check if member ID exists in member_ids table
+      const { data: memberIdRecord, error } = await supabase
+        .from('member_ids')
+        .select(`
+          id,
+          member_id,
+          department,
+          role,
+          assigned,
+          assigned_to,
+          user:users!member_ids_assigned_to_fkey(name, email)
+        `)
         .eq('member_id', memberId)
         .single()
 
@@ -62,37 +70,34 @@ export default function SignUpPage() {
         return
       }
 
-      if (existingUser) {
-        // Member ID is already assigned
+      if (!memberIdRecord) {
+        // Member ID doesn't exist in the system
         setMemberIdStatus('invalid')
         setMemberIdInfo(null)
-        setError(`Member ID ${memberId} is already assigned to ${existingUser.email}`)
+        setError(`Member ID ${memberId} is not available in the system`)
         return
       }
 
-      // Extract department and role from member ID
-      let department = 'general'
-      const role = 'member'
-      
-      if (memberId.startsWith('PR-')) {
-        department = 'programming'
-      } else if (memberId.startsWith('DS-')) {
-        department = 'design'
-      } else if (memberId.startsWith('MK-')) {
-        department = 'marketing'
-      } else if (memberId.startsWith('MG-')) {
-        department = 'management'
-      } else if (memberId.startsWith('GN-')) {
-        department = 'general'
-      } else {
+      if (memberIdRecord.assigned && memberIdRecord.user) {
+        // Member ID is already assigned to another user
         setMemberIdStatus('invalid')
         setMemberIdInfo(null)
-        setError('Invalid department prefix. Use PR-, DS-, MK-, MG-, or GN-')
+        setError(`Member ID ${memberId} is already assigned to ${memberIdRecord.user.email}`)
         return
       }
+
+      // Use department and role from the member_ids table
+      const department = memberIdRecord.department
+      const role = memberIdRecord.role
 
       // Member ID is available and valid
-      console.log('Member ID validation successful:', { memberId, department, role })
+      console.log('Member ID validation successful:', { 
+        memberId, 
+        department, 
+        role, 
+        assigned: memberIdRecord.assigned,
+        recordId: memberIdRecord.id 
+      })
       setMemberIdStatus('valid')
       setMemberIdInfo({
         department: department,
@@ -187,7 +192,22 @@ export default function SignUpPage() {
           return
         }
 
-        // Member ID is now assigned to this user in the users table
+        // Update member_ids table to mark as assigned
+        const { error: memberIdUpdateError } = await supabase
+          .from('member_ids')
+          .update({
+            assigned: true,
+            assigned_to: data.user.id,
+            updated_at: new Date().toISOString()
+          })
+          .eq('member_id', formData.memberId)
+
+        if (memberIdUpdateError) {
+          console.error('Error updating member_ids table:', memberIdUpdateError)
+          // Don't fail the signup, just log the error
+        }
+
+        // Member ID is now assigned to this user in both tables
         console.log('Member ID assigned successfully:', formData.memberId)
 
         router.push('/login?message=Account created successfully! Please check your email to verify your account.')
