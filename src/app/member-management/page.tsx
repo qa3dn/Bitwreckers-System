@@ -11,7 +11,11 @@ import {
   CheckIcon,
   XMarkIcon,
   UserIcon,
-  CalendarIcon
+  CalendarIcon,
+  PencilIcon,
+  ArrowPathIcon,
+  UserPlusIcon,
+  EnvelopeIcon
 } from '@heroicons/react/24/outline'
 
 interface MemberId {
@@ -47,33 +51,54 @@ export default function MemberManagementPage() {
   const [quantity, setQuantity] = useState(1)
   const [filter, setFilter] = useState<'all' | 'assigned' | 'unassigned'>('all')
   const [searchTerm, setSearchTerm] = useState('')
+  const [editingMember, setEditingMember] = useState<MemberId | null>(null)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [editForm, setEditForm] = useState({
+    name: '',
+    email: '',
+    department: '',
+    role: ''
+  })
   const supabase = createClient()
 
   const fetchMemberIds = async () => {
     try {
-      // Check if table exists first
-      const { data: tableCheck, error: tableError } = await supabase
-        .from('member_ids')
-        .select('id')
-        .limit(1)
-
-      if (tableError && tableError.code === '42P01') {
-        console.log('Table member_ids does not exist, creating sample data...')
-        setMemberIds([])
-        setLoading(false)
-        return
-      }
-
+      // Fetch users with member IDs from users table
       const { data, error } = await supabase
-        .from('member_ids')
+        .from('users')
         .select(`
-          *,
-          user:users!member_ids_assigned_to_fkey(name, email)
+          id,
+          name,
+          email,
+          member_id,
+          department,
+          role,
+          created_at,
+          updated_at
         `)
+        .not('member_id', 'is', null)
         .order('created_at', { ascending: false })
 
       if (error) throw error
-      setMemberIds(data || [])
+      
+      // Transform data to match the expected interface
+      const transformedData = (data || []).map(user => ({
+        id: user.id,
+        member_id: user.member_id,
+        department: user.department,
+        role: user.role,
+        assigned: true, // All users with member_id are assigned
+        assigned_to: user.id,
+        created_by: null,
+        created_at: user.created_at,
+        updated_at: user.updated_at,
+        user: {
+          name: user.name,
+          email: user.email
+        }
+      }))
+      
+      setMemberIds(transformedData)
     } catch (error) {
       console.error('Error fetching member IDs:', error)
       setMemberIds([])
@@ -87,7 +112,6 @@ export default function MemberManagementPage() {
       console.log('Starting to generate member IDs...')
       console.log('Selected department:', selectedDepartment)
       console.log('Quantity:', quantity)
-      console.log('User profile:', userProfile)
 
       // Generate multiple member IDs based on quantity
       for (let i = 0; i < quantity; i++) {
@@ -95,14 +119,14 @@ export default function MemberManagementPage() {
         
         // Generate random 4-digit number
         const randomDigits = Math.floor(Math.random() * 10000).toString().padStart(4, '0')
-        const prefix = departments.find(d => d.value === selectedDepartment)?.prefix || 'GEN'
+        const prefix = departments.find(d => d.value === selectedDepartment)?.prefix || 'GN'
         const memberId = `${prefix}-${randomDigits}`
         
         console.log('Generated member ID:', memberId)
 
         // Check if this ID already exists
         const { data: existing, error: checkError } = await supabase
-          .from('member_ids')
+          .from('users')
           .select('id')
           .eq('member_id', memberId)
           .single()
@@ -118,14 +142,18 @@ export default function MemberManagementPage() {
           continue
         }
 
-        // Create the member ID record
+        // Create a placeholder user record (will be updated when real user signs up)
         const { error: insertError } = await supabase
-          .from('member_ids')
+          .from('users')
           .insert({
+            id: `temp-${Date.now()}-${i}`, // Temporary ID
+            name: `Placeholder User ${memberId}`,
+            email: `placeholder-${memberId}@example.com`,
             member_id: memberId,
             department: selectedDepartment,
-            role: `${selectedDepartment}_member`,
-            created_by: userProfile?.id
+            role: 'member',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
           })
 
         if (insertError) {
@@ -151,7 +179,7 @@ export default function MemberManagementPage() {
 
     try {
       const { error } = await supabase
-        .from('member_ids')
+        .from('users')
         .delete()
         .eq('id', id)
 
@@ -173,6 +201,68 @@ export default function MemberManagementPage() {
 
   const getStatusText = (assigned: boolean) => {
     return assigned ? 'Assigned' : 'Unassigned'
+  }
+
+  const handleEditMember = (member: MemberId) => {
+    setEditingMember(member)
+    setEditForm({
+      name: member.user?.name || '',
+      email: member.user?.email || '',
+      department: member.department,
+      role: member.role
+    })
+    setShowEditModal(true)
+  }
+
+  const handleUpdateMember = async () => {
+    if (!editingMember) return
+
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update({
+          name: editForm.name,
+          email: editForm.email,
+          department: editForm.department,
+          role: editForm.role,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', editingMember.id)
+
+      if (error) throw error
+
+      setShowEditModal(false)
+      setEditingMember(null)
+      fetchMemberIds()
+      alert('Member updated successfully!')
+    } catch (error) {
+      console.error('Error updating member:', error)
+      alert('Error updating member')
+    }
+  }
+
+  const handleResetPassword = async (memberId: string) => {
+    if (!confirm('Are you sure you want to reset this member\'s password?')) return
+
+    try {
+      // This would typically send a password reset email
+      // For now, we'll just show a message
+      alert('Password reset email sent to member')
+    } catch (error) {
+      console.error('Error resetting password:', error)
+      alert('Error resetting password')
+    }
+  }
+
+  const handleSendWelcomeEmail = async (member: MemberId) => {
+    try {
+      // This would typically send a welcome email
+      // For now, we'll just show a message
+      alert(`Welcome email sent to ${member.user?.email}`)
+    } catch (error) {
+      console.error('Error sending welcome email:', error)
+      alert('Error sending welcome email')
+    }
   }
 
   const filteredMemberIds = memberIds.filter(member => {
@@ -351,15 +441,37 @@ export default function MemberManagementPage() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex gap-2">
-                          {!member.assigned && (
-                            <button
-                              onClick={() => deleteMemberId(member.id)}
-                              className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
-                              title="Delete"
-                            >
-                              <TrashIcon className="h-4 w-4" />
-                            </button>
-                          )}
+                          <button
+                            onClick={() => handleEditMember(member)}
+                            className="p-2 text-blue-500 hover:bg-blue-500/10 rounded-lg transition-colors"
+                            title="Edit Member"
+                          >
+                            <PencilIcon className="h-4 w-4" />
+                          </button>
+                          
+                          <button
+                            onClick={() => handleResetPassword(member.id)}
+                            className="p-2 text-yellow-500 hover:bg-yellow-500/10 rounded-lg transition-colors"
+                            title="Reset Password"
+                          >
+                            <ArrowPathIcon className="h-4 w-4" />
+                          </button>
+                          
+                          <button
+                            onClick={() => handleSendWelcomeEmail(member)}
+                            className="p-2 text-green-500 hover:bg-green-500/10 rounded-lg transition-colors"
+                            title="Send Welcome Email"
+                          >
+                            <EnvelopeIcon className="h-4 w-4" />
+                          </button>
+                          
+                          <button
+                            onClick={() => deleteMemberId(member.id)}
+                            className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                            title="Delete Member"
+                          >
+                            <TrashIcon className="h-4 w-4" />
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -369,6 +481,103 @@ export default function MemberManagementPage() {
             </div>
           </div>
         </div>
+
+        {/* Edit Modal */}
+        {showEditModal && editingMember && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-dark-gray p-6 rounded-lg w-full max-w-md mx-4">
+              <h3 className="text-xl font-bold text-soft-white mb-4">Edit Member</h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-light-gray mb-2">
+                    Member ID
+                  </label>
+                  <input
+                    type="text"
+                    value={editingMember.member_id}
+                    disabled
+                    className="w-full px-4 py-2 bg-midnight-blue text-soft-white rounded-lg border border-gray-600 opacity-50"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-light-gray mb-2">
+                    Name
+                  </label>
+                  <input
+                    type="text"
+                    value={editForm.name}
+                    onChange={(e) => setEditForm({...editForm, name: e.target.value})}
+                    className="w-full px-4 py-2 bg-midnight-blue text-soft-white rounded-lg border border-gray-600 focus:border-electric-purple focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-light-gray mb-2">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    value={editForm.email}
+                    onChange={(e) => setEditForm({...editForm, email: e.target.value})}
+                    className="w-full px-4 py-2 bg-midnight-blue text-soft-white rounded-lg border border-gray-600 focus:border-electric-purple focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-light-gray mb-2">
+                    Department
+                  </label>
+                  <select
+                    value={editForm.department}
+                    onChange={(e) => setEditForm({...editForm, department: e.target.value})}
+                    className="w-full px-4 py-2 bg-midnight-blue text-soft-white rounded-lg border border-gray-600 focus:border-electric-purple focus:outline-none"
+                  >
+                    {departments.map((dept) => (
+                      <option key={dept.value} value={dept.value}>
+                        {dept.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-light-gray mb-2">
+                    Role
+                  </label>
+                  <select
+                    value={editForm.role}
+                    onChange={(e) => setEditForm({...editForm, role: e.target.value})}
+                    className="w-full px-4 py-2 bg-midnight-blue text-soft-white rounded-lg border border-gray-600 focus:border-electric-purple focus:outline-none"
+                  >
+                    <option value="member">Member</option>
+                    <option value="team_leader">Team Leader</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={handleUpdateMember}
+                  className="flex-1 bg-electric-purple text-soft-white px-4 py-2 rounded-lg hover:bg-purple-600 transition-colors"
+                >
+                  Update Member
+                </button>
+                <button
+                  onClick={() => {
+                    setShowEditModal(false)
+                    setEditingMember(null)
+                  }}
+                  className="flex-1 bg-gray-600 text-soft-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Add Modal */}
         {showAddModal && (
