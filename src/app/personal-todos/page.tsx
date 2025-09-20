@@ -324,13 +324,13 @@ export default function PersonalTodosPage() {
       <div className="min-h-screen bg-midnight-blue" suppressHydrationWarning={true}>
         {/* Header */}
         <div className="bg-dark-gray shadow-sm border-b border-slate-700">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-16">
-              <div className="flex items-center space-x-4">
-                <h1 className="text-2xl font-bold text-soft-white">To Do</h1>
-                <div className="flex items-center space-x-2 text-sm text-light-gray">
+          <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-3 sm:py-4">
+              <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 mb-3 sm:mb-0">
+                <h1 className="text-xl sm:text-2xl font-bold text-soft-white">To Do</h1>
+                <div className="flex items-center space-x-2 text-xs sm:text-sm text-light-gray">
                   <span>{completedCount} of {totalCount} completed</span>
-                  <div className="w-16 bg-slate-600 rounded-full h-2">
+                  <div className="w-12 sm:w-16 bg-slate-600 rounded-full h-2">
                     <div 
                       className="bg-electric-purple h-2 rounded-full transition-all duration-300"
                       style={{ width: `${completionRate}%` }}
@@ -340,34 +340,34 @@ export default function PersonalTodosPage() {
                 </div>
               </div>
               
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-2 sm:space-x-3">
                 {/* Pomodoro Toggle */}
                 <button
                   onClick={() => setShowPomodoro(!showPomodoro)}
-                  className="flex items-center space-x-2 bg-slate-700 hover:bg-slate-600 text-soft-white px-3 py-2 rounded-lg transition-colors"
+                  className="flex items-center space-x-1 sm:space-x-2 bg-slate-700 hover:bg-slate-600 text-soft-white px-2 sm:px-3 py-2 rounded-lg transition-colors"
                 >
-                  <span className="text-lg">🍅</span>
-                  <span className="text-sm font-medium">Focus Timer</span>
+                  <span className="text-sm sm:text-lg">🍅</span>
+                  <span className="text-xs sm:text-sm font-medium hidden sm:block">Focus Timer</span>
                 </button>
 
                 {/* Help Button */}
                 <button
                   onClick={() => setShowHelp(true)}
-                  className="flex items-center space-x-2 bg-slate-700 hover:bg-slate-600 text-soft-white px-3 py-2 rounded-lg transition-colors"
+                  className="flex items-center space-x-1 sm:space-x-2 bg-slate-700 hover:bg-slate-600 text-soft-white px-2 sm:px-3 py-2 rounded-lg transition-colors"
                   title="Keyboard Shortcuts"
                 >
-                  <span className="text-lg">❓</span>
-                  <span className="text-sm font-medium">Help</span>
+                  <span className="text-sm sm:text-lg">❓</span>
+                  <span className="text-xs sm:text-sm font-medium hidden sm:block">Help</span>
                 </button>
 
                 {/* Add Todo Button */}
                 <button
                   onClick={() => setShowAddTodo(true)}
-                  className="flex items-center space-x-2 bg-electric-purple hover:bg-purple-600 text-soft-white px-4 py-2 rounded-lg transition-colors"
+                  className="flex items-center space-x-1 sm:space-x-2 bg-electric-purple hover:bg-purple-600 text-soft-white px-3 sm:px-4 py-2 rounded-lg transition-colors"
                 >
-                  <PlusIcon className="h-5 w-5" />
-                  <span>Add Task</span>
-                  <span className="text-xs text-purple-200">⌘N</span>
+                  <PlusIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+                  <span className="text-sm sm:text-base">Add Task</span>
+                  <span className="text-xs text-purple-200 hidden sm:block">⌘N</span>
                 </button>
               </div>
             </div>
@@ -375,61 +375,61 @@ export default function PersonalTodosPage() {
         </div>
 
         {/* Controls */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-3 sm:py-4">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-3 lg:space-y-0">
             {/* Search and Filters */}
-            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
+            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
               <div className="relative">
-                <MagnifyingGlassIcon className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
+                <MagnifyingGlassIcon className="h-4 w-4 sm:h-5 sm:w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
                 <input
                   type="text"
                   placeholder="Search tasks... (⌘K)"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 pr-4 py-2 bg-dark-gray border border-slate-600 text-soft-white placeholder-light-gray rounded-lg focus:ring-2 focus:ring-electric-purple focus:border-transparent w-full sm:w-64"
+                  className="pl-8 sm:pl-10 pr-4 py-2 bg-dark-gray border border-slate-600 text-soft-white placeholder-light-gray rounded-lg focus:ring-2 focus:ring-electric-purple focus:border-transparent w-full sm:w-64 text-sm sm:text-base"
                 />
               </div>
               
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className="flex items-center space-x-2 px-4 py-2 bg-dark-gray border border-slate-600 text-soft-white rounded-lg hover:bg-slate-700"
+                className="flex items-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-2 bg-dark-gray border border-slate-600 text-soft-white rounded-lg hover:bg-slate-700"
               >
-                <FunnelIcon className="h-5 w-5" />
-                <span>Filters</span>
-                <span className="text-xs text-light-gray">⌘F</span>
+                <FunnelIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+                <span className="text-sm sm:text-base">Filters</span>
+                <span className="text-xs text-light-gray hidden sm:block">⌘F</span>
               </button>
             </div>
 
             {/* View Modes */}
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-1 sm:space-x-2">
               <div className="flex bg-slate-700 rounded-lg p-1">
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`p-2 rounded ${viewMode === 'list' ? 'bg-electric-purple shadow-sm' : 'text-light-gray hover:text-soft-white'}`}
+                  className={`p-1.5 sm:p-2 rounded ${viewMode === 'list' ? 'bg-electric-purple shadow-sm' : 'text-light-gray hover:text-soft-white'}`}
                   title="List View (⌘1)"
                 >
-                  <ListBulletIcon className="h-5 w-5" />
+                  <ListBulletIcon className="h-4 w-4 sm:h-5 sm:w-5" />
                 </button>
                 <button
                   onClick={() => setViewMode('kanban')}
-                  className={`p-2 rounded ${viewMode === 'kanban' ? 'bg-electric-purple shadow-sm' : 'text-light-gray hover:text-soft-white'}`}
+                  className={`p-1.5 sm:p-2 rounded ${viewMode === 'kanban' ? 'bg-electric-purple shadow-sm' : 'text-light-gray hover:text-soft-white'}`}
                   title="Kanban View (⌘2)"
                 >
-                  <Squares2X2Icon className="h-5 w-5" />
+                  <Squares2X2Icon className="h-4 w-4 sm:h-5 sm:w-5" />
                 </button>
                 <button
                   onClick={() => setViewMode('calendar')}
-                  className={`p-2 rounded ${viewMode === 'calendar' ? 'bg-electric-purple shadow-sm' : 'text-light-gray hover:text-soft-white'}`}
+                  className={`p-1.5 sm:p-2 rounded ${viewMode === 'calendar' ? 'bg-electric-purple shadow-sm' : 'text-light-gray hover:text-soft-white'}`}
                   title="Calendar View (⌘3)"
                 >
-                  <CalendarIcon className="h-5 w-5" />
+                  <CalendarIcon className="h-4 w-4 sm:h-5 sm:w-5" />
                 </button>
                 <button
                   onClick={() => setViewMode('stats')}
-                  className={`p-2 rounded ${viewMode === 'stats' ? 'bg-electric-purple shadow-sm' : 'text-light-gray hover:text-soft-white'}`}
+                  className={`p-1.5 sm:p-2 rounded ${viewMode === 'stats' ? 'bg-electric-purple shadow-sm' : 'text-light-gray hover:text-soft-white'}`}
                   title="Statistics (⌘4)"
                 >
-                  <ChartBarIcon className="h-5 w-5" />
+                  <ChartBarIcon className="h-4 w-4 sm:h-5 sm:w-5" />
                 </button>
               </div>
             </div>

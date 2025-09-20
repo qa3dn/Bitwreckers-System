@@ -404,8 +404,159 @@ export default function ChatPage() {
   return (
     <DashboardLayout>
       <div className="h-screen flex bg-midnight-blue">
-        {/* Sidebar */}
-        <div className="w-80 bg-dark-gray border-r border-gray-700 flex flex-col">
+        {/* Mobile Sidebar */}
+        <div className="lg:hidden fixed inset-0 z-50 bg-midnight-blue">
+          <div className="w-80 h-full bg-dark-gray border-r border-gray-700 flex flex-col">
+            {/* Mobile Header */}
+            <div className="p-4 border-b border-gray-700">
+              <div className="flex items-center justify-between mb-4">
+                <h1 className="text-xl font-bold text-soft-white">Messages</h1>
+                <button 
+                  onClick={() => {/* Close mobile sidebar */}}
+                  className="p-2 text-light-gray hover:text-electric-purple transition-colors rounded-lg hover:bg-midnight-blue"
+                >
+                  <XMarkIcon className="h-5 w-5" />
+                </button>
+              </div>
+              
+              {/* Search Bar */}
+              <div className="relative mb-4">
+                <MagnifyingGlassIcon className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-light-gray" />
+                <input
+                  type="text"
+                  placeholder="Search conversations..."
+                  className="w-full pl-9 pr-4 py-2 bg-midnight-blue text-soft-white rounded-lg border border-gray-600 focus:border-electric-purple focus:outline-none text-sm"
+                />
+              </div>
+              
+              {/* Chat Mode Selector */}
+              <div className="space-y-1">
+                <button
+                  onClick={() => setChatMode('company')}
+                  className={`w-full text-left px-3 py-2 rounded-lg transition-all duration-200 ${
+                    chatMode === 'company'
+                      ? 'bg-electric-purple text-soft-white shadow-lg'
+                      : 'text-light-gray hover:bg-midnight-blue hover:text-soft-white'
+                  }`}
+                >
+                  <div className="flex items-center">
+                    <div className="w-8 h-8 bg-gradient-to-br from-electric-purple to-neon-blue rounded-full flex items-center justify-center mr-3">
+                      <ChatBubbleLeftRightIcon className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <div className="font-medium text-sm">Company Chat</div>
+                      <div className="text-xs opacity-75">All team members</div>
+                    </div>
+                  </div>
+                </button>
+                
+                <button
+                  onClick={() => setChatMode('project')}
+                  className={`w-full text-left px-3 py-2 rounded-lg transition-all duration-200 ${
+                    chatMode === 'project'
+                      ? 'bg-electric-purple text-soft-white shadow-lg'
+                      : 'text-light-gray hover:bg-midnight-blue hover:text-soft-white'
+                  }`}
+                >
+                  <div className="flex items-center">
+                    <div className="w-8 h-8 bg-gradient-to-br from-aqua-green to-neon-blue rounded-full flex items-center justify-center mr-3">
+                      <FolderIcon className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <div className="font-medium text-sm">Project Chat</div>
+                      <div className="text-xs opacity-75">Project discussions</div>
+                    </div>
+                  </div>
+                </button>
+                
+                <button
+                  onClick={() => setChatMode('direct')}
+                  className={`w-full text-left px-3 py-2 rounded-lg transition-all duration-200 ${
+                    chatMode === 'direct'
+                      ? 'bg-electric-purple text-soft-white shadow-lg'
+                      : 'text-light-gray hover:bg-midnight-blue hover:text-soft-white'
+                  }`}
+                >
+                  <div className="flex items-center">
+                    <div className="w-8 h-8 bg-gradient-to-br from-coral to-electric-purple rounded-full flex items-center justify-center mr-3">
+                      <UserIcon className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <div className="font-medium text-sm">Direct Messages</div>
+                      <div className="text-xs opacity-75">Private conversations</div>
+                    </div>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            {/* Project/User Selection */}
+            <div className="p-4 border-b border-gray-700 flex-1 overflow-y-auto">
+              {chatMode === 'project' && (
+                <div>
+                  <h3 className="text-xs font-medium text-light-gray mb-3">Select Project</h3>
+                  <div className="space-y-2">
+                    {projects.map(project => (
+                      <button
+                        key={project.id}
+                        onClick={() => setSelectedProject(project)}
+                        className={`w-full text-left px-3 py-2 rounded-lg transition-all duration-200 ${
+                          selectedProject?.id === project.id
+                            ? 'bg-electric-purple text-soft-white'
+                            : 'text-light-gray hover:bg-midnight-blue hover:text-soft-white'
+                        }`}
+                      >
+                        <div className="flex items-center">
+                          <div className="w-8 h-8 bg-gradient-to-br from-aqua-green to-neon-blue rounded-full flex items-center justify-center mr-3">
+                            <FolderIcon className="h-4 w-4" />
+                          </div>
+                          <div>
+                            <div className="font-medium text-sm">{project.name}</div>
+                            <div className="text-xs opacity-75">{project.status}</div>
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {chatMode === 'direct' && (
+                <div>
+                  <h3 className="text-xs font-medium text-light-gray mb-3">Select User</h3>
+                  <div className="space-y-2">
+                    {users.filter(u => u.id !== user?.id).map(userItem => (
+                      <button
+                        key={userItem.id}
+                        onClick={() => setSelectedUser(userItem)}
+                        className={`w-full text-left px-3 py-2 rounded-lg transition-all duration-200 ${
+                          selectedUser?.id === userItem.id
+                            ? 'bg-electric-purple text-soft-white'
+                            : 'text-light-gray hover:bg-midnight-blue hover:text-soft-white'
+                        }`}
+                      >
+                        <div className="flex items-center">
+                          <div className="w-8 h-8 bg-gradient-to-br from-coral to-electric-purple rounded-full flex items-center justify-center mr-3">
+                            <span className="text-xs font-bold">{getInitials(userItem.name)}</span>
+                          </div>
+                          <div>
+                            <div className="font-medium text-sm">{userItem.name}</div>
+                            <div className="text-xs opacity-75">
+                              {getOnlineStatus(userItem.id) ? 'Online' : 'Offline'}
+                            </div>
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Desktop Sidebar */}
+        <div className="hidden lg:flex w-80 bg-dark-gray border-r border-gray-700 flex-col">
           {/* Header */}
           <div className="p-6 border-b border-gray-700">
             <div className="flex items-center justify-between mb-6">
@@ -578,32 +729,32 @@ export default function ChatPage() {
         {/* Main Chat Area */}
         <div className="flex-1 flex flex-col">
           {/* Chat Header */}
-          <div className="bg-dark-gray border-b border-gray-700 p-4 flex items-center justify-between">
-            <div className="flex items-center">
-              <div className="w-12 h-12 bg-gradient-to-br from-electric-purple to-neon-blue rounded-full flex items-center justify-center mr-4">
-                <span className="text-lg font-bold">{getInitials(getChatTitle())}</span>
+          <div className="bg-dark-gray border-b border-gray-700 p-3 md:p-4 flex items-center justify-between">
+            <div className="flex items-center flex-1 min-w-0">
+              <div className="w-8 h-8 md:w-12 md:h-12 bg-gradient-to-br from-electric-purple to-neon-blue rounded-full flex items-center justify-center mr-2 md:mr-4 flex-shrink-0">
+                <span className="text-sm md:text-lg font-bold">{getInitials(getChatTitle())}</span>
               </div>
-              <div>
-                <h2 className="text-lg font-semibold text-soft-white">{getChatTitle()}</h2>
-                <p className="text-sm text-light-gray">{getChatSubtitle()}</p>
+              <div className="min-w-0 flex-1">
+                <h2 className="text-sm md:text-lg font-semibold text-soft-white truncate">{getChatTitle()}</h2>
+                <p className="text-xs md:text-sm text-light-gray truncate">{getChatSubtitle()}</p>
               </div>
             </div>
-            <div className="flex items-center space-x-2">
-              <button className="p-2 text-light-gray hover:text-electric-purple transition-colors rounded-lg hover:bg-midnight-blue">
-                <PhoneIcon className="h-5 w-5" />
+            <div className="flex items-center space-x-1 md:space-x-2 flex-shrink-0">
+              <button className="p-1 md:p-2 text-light-gray hover:text-electric-purple transition-colors rounded-lg hover:bg-midnight-blue">
+                <PhoneIcon className="h-4 w-4 md:h-5 md:w-5" />
               </button>
-              <button className="p-2 text-light-gray hover:text-electric-purple transition-colors rounded-lg hover:bg-midnight-blue">
-                <VideoCameraIcon className="h-5 w-5" />
+              <button className="p-1 md:p-2 text-light-gray hover:text-electric-purple transition-colors rounded-lg hover:bg-midnight-blue">
+                <VideoCameraIcon className="h-4 w-4 md:h-5 md:w-5" />
               </button>
-              <button className="p-2 text-light-gray hover:text-electric-purple transition-colors rounded-lg hover:bg-midnight-blue">
-                <EllipsisVerticalIcon className="h-5 w-5" />
+              <button className="p-1 md:p-2 text-light-gray hover:text-electric-purple transition-colors rounded-lg hover:bg-midnight-blue">
+                <EllipsisVerticalIcon className="h-4 w-4 md:h-5 md:w-5" />
               </button>
             </div>
           </div>
 
           {/* Messages Area */}
           <div className="flex-1 overflow-y-auto bg-gradient-to-b from-midnight-blue to-dark-gray">
-            <div className="p-4 space-y-4">
+            <div className="p-2 md:p-4 space-y-2 md:space-y-4">
               {/* Pinned Message */}
               {pinnedMessage && (
                 <PinnedMessage
@@ -705,10 +856,10 @@ export default function ChatPage() {
           </div>
 
           {/* Message Input */}
-          <div className="bg-dark-gray border-t border-gray-700 p-4">
+          <div className="bg-dark-gray border-t border-gray-700 p-2 md:p-4">
             {/* File Upload */}
             {selectedFile && (
-              <div className="mb-4">
+              <div className="mb-3 md:mb-4">
                 <FileUpload
                   onFileSelect={handleFileSelect}
                   onRemove={handleFileRemove}
@@ -718,12 +869,12 @@ export default function ChatPage() {
             )}
 
             {/* Message Input */}
-            <div className="flex items-end space-x-3">
+            <div className="flex items-end space-x-2 md:space-x-3">
               <button
                 onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                className="p-2 text-light-gray hover:text-electric-purple transition-colors rounded-lg hover:bg-midnight-blue"
+                className="p-1 md:p-2 text-light-gray hover:text-electric-purple transition-colors rounded-lg hover:bg-midnight-blue"
               >
-                <FaceSmileIcon className="h-5 w-5" />
+                <FaceSmileIcon className="h-4 w-4 md:h-5 md:w-5" />
               </button>
               
               <div className="flex-1 relative">
@@ -739,20 +890,20 @@ export default function ChatPage() {
                     }
                   }}
                   placeholder="Type a message..."
-                  className="w-full px-4 py-3 bg-midnight-blue text-soft-white rounded-2xl border border-gray-600 focus:border-electric-purple focus:outline-none resize-none"
+                  className="w-full px-3 md:px-4 py-2 md:py-3 bg-midnight-blue text-soft-white rounded-2xl border border-gray-600 focus:border-electric-purple focus:outline-none resize-none text-sm md:text-base"
                 />
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center space-x-1">
+                <div className="absolute right-2 md:right-3 top-1/2 transform -translate-y-1/2 flex items-center space-x-1">
                   <button
                     onClick={() => setSelectedFile(null)}
                     className="p-1 text-light-gray hover:text-electric-purple transition-colors"
                   >
-                    <PhotoIcon className="h-4 w-4" />
+                    <PhotoIcon className="h-3 w-3 md:h-4 md:w-4" />
                   </button>
                   <button
                     onClick={() => setSelectedFile(null)}
                     className="p-1 text-light-gray hover:text-electric-purple transition-colors"
                   >
-                    <DocumentIcon className="h-4 w-4" />
+                    <DocumentIcon className="h-3 w-3 md:h-4 md:w-4" />
                   </button>
                 </div>
               </div>
@@ -760,9 +911,9 @@ export default function ChatPage() {
               <button
                 onClick={handleSendMessage}
                 disabled={!newMessage.trim() && !selectedFile}
-                className="p-3 bg-gradient-to-r from-electric-purple to-neon-blue text-soft-white rounded-full hover:from-neon-blue hover:to-electric-purple disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl"
+                className="p-2 md:p-3 bg-gradient-to-r from-electric-purple to-neon-blue text-soft-white rounded-full hover:from-neon-blue hover:to-electric-purple disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl"
               >
-                <ArrowUpIcon className="h-5 w-5" />
+                <ArrowUpIcon className="h-4 w-4 md:h-5 md:w-5" />
               </button>
             </div>
           </div>

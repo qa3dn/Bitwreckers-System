@@ -112,16 +112,16 @@ export default function Dashboard() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <div className="space-y-4 md:space-y-6 px-2 md:px-0">
         {/* Welcome Section */}
-        <div className="bg-dark-gray rounded-lg p-6">
-          <h1 className="text-2xl font-bold text-soft-white mb-2">
+        <div className="bg-dark-gray rounded-lg p-4 md:p-6">
+          <h1 className="text-xl md:text-2xl font-bold text-soft-white mb-2">
             Welcome back, {user.user_metadata?.name || 'User'}!
           </h1>
-          <p className="text-light-gray">
+          <p className="text-light-gray text-sm md:text-base">
             Here's what's happening with your projects today.
           </p>
-          <p className="text-sm text-light-gray mt-2">
+          <p className="text-xs md:text-sm text-light-gray mt-2 hidden md:block">
             Press <kbd className="px-2 py-1 bg-midnight-blue rounded text-xs">Ctrl+K</kbd> to search, 
             <kbd className="px-2 py-1 bg-midnight-blue rounded text-xs ml-1">Ctrl+N</kbd> for new task
           </p>
@@ -134,76 +134,76 @@ export default function Dashboard() {
         <PinnedProjects />
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="bg-dark-gray rounded-lg p-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
+          <div className="bg-dark-gray rounded-lg p-3 md:p-6">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <FolderIcon className="h-8 w-8 text-electric-purple" />
+                <FolderIcon className="h-6 w-6 md:h-8 md:w-8 text-electric-purple" />
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-light-gray">Total Projects</p>
-                <p className="text-2xl font-semibold text-soft-white">{stats.totalProjects}</p>
+              <div className="ml-2 md:ml-4">
+                <p className="text-xs md:text-sm font-medium text-light-gray">Total Projects</p>
+                <p className="text-lg md:text-2xl font-semibold text-soft-white">{stats.totalProjects}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-dark-gray rounded-lg p-6">
+          <div className="bg-dark-gray rounded-lg p-3 md:p-6">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <CheckIcon className="h-8 w-8 text-aqua-green" />
+                <CheckIcon className="h-6 w-6 md:h-8 md:w-8 text-aqua-green" />
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-light-gray">Completed Tasks</p>
-                <p className="text-2xl font-semibold text-soft-white">
+              <div className="ml-2 md:ml-4">
+                <p className="text-xs md:text-sm font-medium text-light-gray">Completed Tasks</p>
+                <p className="text-lg md:text-2xl font-semibold text-soft-white">
                   {stats.completedTasks}/{stats.totalTasks}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="bg-dark-gray rounded-lg p-6">
+          <div className="bg-dark-gray rounded-lg p-3 md:p-6">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <ClockIcon className="h-8 w-8 text-neon-blue" />
+                <ClockIcon className="h-6 w-6 md:h-8 md:w-8 text-neon-blue" />
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-light-gray">Active Projects</p>
-                <p className="text-2xl font-semibold text-soft-white">{stats.activeProjects}</p>
+              <div className="ml-2 md:ml-4">
+                <p className="text-xs md:text-sm font-medium text-light-gray">Active Projects</p>
+                <p className="text-lg md:text-2xl font-semibold text-soft-white">{stats.activeProjects}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-dark-gray rounded-lg p-6">
+          <div className="bg-dark-gray rounded-lg p-3 md:p-6">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <ExclamationTriangleIcon className="h-8 w-8 text-coral" />
+                <ExclamationTriangleIcon className="h-6 w-6 md:h-8 md:w-8 text-coral" />
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-light-gray">Overdue Tasks</p>
-                <p className="text-2xl font-semibold text-soft-white">{stats.overdueTasks}</p>
+              <div className="ml-2 md:ml-4">
+                <p className="text-xs md:text-sm font-medium text-light-gray">Overdue Tasks</p>
+                <p className="text-lg md:text-2xl font-semibold text-soft-white">{stats.overdueTasks}</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* Recent Projects and Tasks */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
           {/* Recent Projects */}
-          <div className="bg-dark-gray rounded-lg p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-soft-white">Recent Projects</h2>
-              <a href="/projects" className="text-electric-purple hover:text-neon-blue text-sm transition-colors">
+          <div className="bg-dark-gray rounded-lg p-4 md:p-6">
+            <div className="flex items-center justify-between mb-3 md:mb-4">
+              <h2 className="text-base md:text-lg font-semibold text-soft-white">Recent Projects</h2>
+              <a href="/projects" className="text-electric-purple hover:text-purple-400 text-xs md:text-sm transition-colors">
                 View all
               </a>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-2 md:space-y-3">
               {recentProjects.map((project) => (
-                <div key={project.id} className="flex items-center justify-between p-3 bg-midnight-blue rounded-md">
-                  <div>
-                    <h3 className="text-sm font-medium text-soft-white">{project.name}</h3>
+                <div key={project.id} className="flex items-center justify-between p-2 md:p-3 bg-midnight-blue rounded-md">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-xs md:text-sm font-medium text-soft-white truncate">{project.name}</h3>
                     <p className="text-xs text-light-gray">{project.status}</p>
                   </div>
-                  <div className={`px-2 py-1 rounded-full text-xs ${
+                  <div className={`px-2 py-1 rounded-full text-xs ml-2 ${
                     project.status === 'completed' ? 'bg-aqua-green text-midnight-blue' :
                     project.status === 'in_progress' ? 'bg-neon-blue text-midnight-blue' :
                     'bg-light-gray text-midnight-blue'
@@ -213,27 +213,27 @@ export default function Dashboard() {
                 </div>
               ))}
               {recentProjects.length === 0 && (
-                <p className="text-light-gray text-sm">No projects yet</p>
+                <p className="text-light-gray text-xs md:text-sm">No projects yet</p>
               )}
             </div>
           </div>
 
           {/* Recent Tasks */}
-          <div className="bg-dark-gray rounded-lg p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-soft-white">Recent Tasks</h2>
-              <a href="/tasks" className="text-electric-purple hover:text-neon-blue text-sm transition-colors">
+          <div className="bg-dark-gray rounded-lg p-4 md:p-6">
+            <div className="flex items-center justify-between mb-3 md:mb-4">
+              <h2 className="text-base md:text-lg font-semibold text-soft-white">Recent Tasks</h2>
+              <a href="/tasks" className="text-electric-purple hover:text-purple-400 text-xs md:text-sm transition-colors">
                 View all
               </a>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-2 md:space-y-3">
               {recentTasks.map((task) => (
-                <div key={task.id} className="flex items-center justify-between p-3 bg-midnight-blue rounded-md">
-                  <div>
-                    <h3 className="text-sm font-medium text-soft-white">{task.title}</h3>
+                <div key={task.id} className="flex items-center justify-between p-2 md:p-3 bg-midnight-blue rounded-md">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-xs md:text-sm font-medium text-soft-white truncate">{task.title}</h3>
                     <p className="text-xs text-light-gray">{task.priority} priority</p>
                   </div>
-                  <div className={`px-2 py-1 rounded-full text-xs ${
+                  <div className={`px-2 py-1 rounded-full text-xs ml-2 ${
                     task.status === 'done' ? 'bg-aqua-green text-midnight-blue' :
                     task.status === 'in_progress' ? 'bg-neon-blue text-midnight-blue' :
                     'bg-light-gray text-midnight-blue'
@@ -243,36 +243,36 @@ export default function Dashboard() {
                 </div>
               ))}
               {recentTasks.length === 0 && (
-                <p className="text-light-gray text-sm">No tasks yet</p>
+                <p className="text-light-gray text-xs md:text-sm">No tasks yet</p>
               )}
             </div>
           </div>
         </div>
 
         {/* Quick Actions */}
-        <div className="bg-dark-gray rounded-lg p-6">
-          <h2 className="text-lg font-semibold text-soft-white mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-dark-gray rounded-lg p-4 md:p-6">
+          <h2 className="text-base md:text-lg font-semibold text-soft-white mb-3 md:mb-4">Quick Actions</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
             <a
               href="/projects/new"
-              className="flex items-center p-4 bg-electric-purple hover:bg-neon-blue rounded-lg transition-colors"
+              className="flex items-center p-3 md:p-4 bg-electric-purple hover:bg-neon-blue rounded-lg transition-colors"
             >
-              <FolderIcon className="h-6 w-6 text-soft-white mr-3" />
-              <span className="text-soft-white font-medium">New Project</span>
-        </a>
-        <a
+              <FolderIcon className="h-5 w-5 md:h-6 md:w-6 text-soft-white mr-2 md:mr-3" />
+              <span className="text-soft-white font-medium text-sm md:text-base">New Project</span>
+            </a>
+            <a
               href="/tasks/new"
-              className="flex items-center p-4 bg-electric-purple hover:bg-neon-blue rounded-lg transition-colors"
+              className="flex items-center p-3 md:p-4 bg-electric-purple hover:bg-neon-blue rounded-lg transition-colors"
             >
-              <CheckIcon className="h-6 w-6 text-soft-white mr-3" />
-              <span className="text-soft-white font-medium">New Task</span>
-        </a>
-        <a
+              <CheckIcon className="h-5 w-5 md:h-6 md:w-6 text-soft-white mr-2 md:mr-3" />
+              <span className="text-soft-white font-medium text-sm md:text-base">New Task</span>
+            </a>
+            <a
               href="/team"
-              className="flex items-center p-4 bg-electric-purple hover:bg-neon-blue rounded-lg transition-colors"
+              className="flex items-center p-3 md:p-4 bg-electric-purple hover:bg-neon-blue rounded-lg transition-colors sm:col-span-2 md:col-span-1"
             >
-              <UsersIcon className="h-6 w-6 text-soft-white mr-3" />
-              <span className="text-soft-white font-medium">Manage Team</span>
+              <UsersIcon className="h-5 w-5 md:h-6 md:w-6 text-soft-white mr-2 md:mr-3" />
+              <span className="text-soft-white font-medium text-sm md:text-base">Manage Team</span>
             </a>
           </div>
         </div>

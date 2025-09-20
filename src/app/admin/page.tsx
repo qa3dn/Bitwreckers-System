@@ -482,17 +482,17 @@ export default function AdminPage() {
   return (
     <Protected allowedRoles={['team-lead']}>
       <DashboardLayout>
-        <div className="min-h-screen bg-midnight-blue p-6">
+        <div className="min-h-screen bg-midnight-blue p-2 sm:p-4 lg:p-6">
           <div className="max-w-7xl mx-auto">
             {/* Header */}
-            <div className="mb-8">
-              <h1 className="text-3xl font-bold text-soft-white mb-2">Admin Dashboard</h1>
-              <p className="text-light-gray">Comprehensive overview of projects, tasks, and team performance</p>
+            <div className="mb-4 sm:mb-6 lg:mb-8">
+              <h1 className="text-2xl sm:text-3xl font-bold text-soft-white mb-2">Admin Dashboard</h1>
+              <p className="text-light-gray text-sm sm:text-base">Comprehensive overview of projects, tasks, and team performance</p>
             </div>
 
             {/* Navigation Tabs */}
-            <div className="mb-8">
-              <nav className="flex space-x-8">
+            <div className="mb-4 sm:mb-6 lg:mb-8">
+              <nav className="flex flex-wrap gap-2 sm:gap-4 lg:gap-8">
                 {[
                   { id: 'overview', name: 'Overview', icon: ChartBarIcon },
                   { id: 'suggestions', name: 'Suggestions', icon: LightBulbIcon },
@@ -505,14 +505,15 @@ export default function AdminPage() {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id as any)}
-                    className={`flex items-center px-4 py-2 rounded-lg transition-colors ${
+                    className={`flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4 py-2 rounded-lg transition-colors text-sm sm:text-base ${
                       activeTab === tab.id
                         ? 'bg-electric-purple text-soft-white'
                         : 'text-light-gray hover:text-soft-white hover:bg-dark-gray'
                     }`}
                   >
-                    <tab.icon className="h-5 w-5 mr-2" />
-                    {tab.name}
+                    <tab.icon className="h-4 w-4 sm:h-5 sm:w-5" />
+                    <span className="hidden sm:block">{tab.name}</span>
+                    <span className="sm:hidden">{tab.name.charAt(0)}</span>
                   </button>
                 ))}
               </nav>
