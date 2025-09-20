@@ -30,37 +30,51 @@ export default function SignUpPage() {
       return
     }
 
+    // Validate format first
+    if (!memberId.match(/^[A-Z]{2,3}-[0-9]{4}$/)) {
+      setMemberIdStatus('invalid')
+      setMemberIdInfo(null)
+      return
+    }
+
     setMemberIdStatus('checking')
     
     try {
-      // Check if member ID exists and is not assigned
-      const { data: memberData, error } = await supabase
-        .from('member_ids')
-        .select('*')
+      // Check if member ID is already assigned to another user
+      const { data: existingUser, error } = await supabase
+        .from('users')
+        .select('id, member_id')
         .eq('member_id', memberId)
-        .eq('assigned', false)
         .single()
 
-      if (error || !memberData) {
+      if (error && error.code !== 'PGRST116') {
+        // Error other than "not found"
         setMemberIdStatus('invalid')
         setMemberIdInfo(null)
         return
       }
 
-      // Extract department and role from member ID manually
-      let department = 'General'
+      if (existingUser) {
+        // Member ID is already assigned
+        setMemberIdStatus('invalid')
+        setMemberIdInfo(null)
+        return
+      }
+
+      // Extract department and role from member ID
+      let department = 'general'
       const role = 'member'
       
       if (memberId.startsWith('PR-')) {
-        department = 'PR'
-      } else if (memberId.startsWith('MED-')) {
-        department = 'Media'
-      } else if (memberId.startsWith('DEV-')) {
-        department = 'Dev'
-      } else if (memberId.startsWith('MGT-')) {
-        department = 'Management'
-      } else if (memberId.startsWith('GEN-')) {
-        department = 'General'
+        department = 'programming'
+      } else if (memberId.startsWith('DS-')) {
+        department = 'design'
+      } else if (memberId.startsWith('MK-')) {
+        department = 'marketing'
+      } else if (memberId.startsWith('MG-')) {
+        department = 'management'
+      } else if (memberId.startsWith('GN-')) {
+        department = 'general'
       } else {
         setMemberIdStatus('invalid')
         setMemberIdInfo(null)
@@ -81,10 +95,10 @@ export default function SignUpPage() {
   const handleMemberIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value.toUpperCase()
     
-    // Format: PR-1234, MED-1234, DEV-1234, MGT-1234, GEN-1234
-    if (value.length > 3 && !value.includes('-')) {
-      const prefix = value.substring(0, 3)
-      const numbers = value.substring(3).replace(/\D/g, '').substring(0, 4)
+    // Format: PR-1234, DS-1234, MK-1234, MG-1234, GN-1234
+    if (value.length > 2 && !value.includes('-')) {
+      const prefix = value.substring(0, 2)
+      const numbers = value.substring(2).replace(/\D/g, '').substring(0, 4)
       value = `${prefix}-${numbers}`
     }
     
@@ -152,19 +166,8 @@ export default function SignUpPage() {
           return
         }
 
-        // Mark member ID as assigned
-        const { error: updateError } = await supabase
-          .from('member_ids')
-          .update({ 
-            assigned: true, 
-            assigned_to: data.user.id,
-            updated_at: new Date().toISOString()
-          })
-          .eq('member_id', formData.memberId)
-
-        if (updateError) {
-          console.error('Member ID update error:', updateError)
-        }
+        // Member ID is now assigned to this user in the users table
+        console.log('Member ID assigned successfully:', formData.memberId)
 
         router.push('/login?message=Account created successfully! Please check your email to verify your account.')
       }
@@ -184,11 +187,11 @@ export default function SignUpPage() {
 
   const getDepartmentLabel = (dept: string) => {
     const departments: {[key: string]: string} = {
-      'PR': 'Public Relations',
-      'Media': 'Media',
-      'Dev': 'Development',
-      'Management': 'Management',
-      'General': 'General Member'
+      'programming': 'Programming',
+      'design': 'Design',
+      'marketing': 'Marketing',
+      'management': 'Management',
+      'general': 'General'
     }
     return departments[dept] || dept
   }
