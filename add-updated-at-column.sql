@@ -18,9 +18,18 @@ BEGIN
 END $$;
 
 -- Update existing records to have updated_at = created_at
-UPDATE users 
-SET updated_at = created_at 
-WHERE updated_at IS NULL;
+-- First check if column exists, then update
+DO $$ 
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'users' AND column_name = 'updated_at'
+    ) THEN
+        UPDATE users 
+        SET updated_at = created_at 
+        WHERE updated_at IS NULL;
+    END IF;
+END $$;
 
 -- Create trigger to automatically update updated_at on changes
 CREATE OR REPLACE FUNCTION update_updated_at_column()
