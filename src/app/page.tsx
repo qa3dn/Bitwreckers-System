@@ -39,30 +39,46 @@ export default function Dashboard() {
 
   const fetchDashboardData = async () => {
     try {
-      // Fetch projects
-      const { data: projectsData, error: projectsError } = await supabase
-        .from('projects')
-        .select('*')
-        .order('created_at', { ascending: false })
+      // Fetch data in parallel for better performance
+      const [projectsResult, tasksResult] = await Promise.allSettled([
+        supabase
+          .from('projects')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(10), // Limit to 10 recent projects
+        supabase
+          .from('tasks')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(20) // Limit to 20 recent tasks
+      ])
 
-      if (projectsError) {
-        console.error('Error fetching projects:', projectsError.message || projectsError)
-        setProjects([])
+      // Handle projects result
+      if (projectsResult.status === 'fulfilled') {
+        const { data: projectsData, error: projectsError } = projectsResult.value
+        if (projectsError) {
+          console.error('Error fetching projects:', projectsError.message || projectsError)
+          setProjects([])
+        } else {
+          setProjects(projectsData || [])
+        }
       } else {
-        setProjects(projectsData || [])
+        console.error('Projects fetch failed:', projectsResult.reason)
+        setProjects([])
       }
 
-      // Fetch tasks
-      const { data: tasksData, error: tasksError } = await supabase
-        .from('tasks')
-        .select('*')
-        .order('created_at', { ascending: false })
-
-      if (tasksError) {
-        console.error('Error fetching tasks:', tasksError.message || tasksError)
-        setTasks([])
+      // Handle tasks result
+      if (tasksResult.status === 'fulfilled') {
+        const { data: tasksData, error: tasksError } = tasksResult.value
+        if (tasksError) {
+          console.error('Error fetching tasks:', tasksError.message || tasksError)
+          setTasks([])
+        } else {
+          setTasks(tasksData || [])
+        }
       } else {
-        setTasks(tasksData || [])
+        console.error('Tasks fetch failed:', tasksResult.reason)
+        setTasks([])
       }
     } catch (error) {
       console.error('Error fetching dashboard data:', error)
@@ -72,7 +88,6 @@ export default function Dashboard() {
   }
 
   if (authLoading || loading) {
-    console.log('Loading state:', { authLoading, loading, user })
     return (
       <div className="min-h-screen bg-midnight-blue flex items-center justify-center" suppressHydrationWarning={true}>
         <div className="text-center" suppressHydrationWarning={true}>
@@ -262,15 +277,15 @@ export default function Dashboard() {
             >
               <FolderIcon className="h-5 w-5 md:h-6 md:w-6 text-soft-white mr-2 md:mr-3" />
               <span className="text-soft-white font-medium text-sm md:text-base">New Project</span>
-            </a>
-            <a
+        </a>
+        <a
               href="/tasks/new"
               className="flex items-center p-3 md:p-4 bg-electric-purple hover:bg-neon-blue rounded-lg transition-colors"
             >
               <CheckIcon className="h-5 w-5 md:h-6 md:w-6 text-soft-white mr-2 md:mr-3" />
               <span className="text-soft-white font-medium text-sm md:text-base">New Task</span>
-            </a>
-            <a
+        </a>
+        <a
               href="/team"
               className="flex items-center p-3 md:p-4 bg-electric-purple hover:bg-neon-blue rounded-lg transition-colors sm:col-span-2 md:col-span-1"
             >

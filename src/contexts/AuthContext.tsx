@@ -22,17 +22,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let isMounted = true
-    // Set a timeout to stop loading after 10 seconds
+    // Set a timeout to stop loading after 5 seconds
     const timeoutId = setTimeout(() => {
       if (isMounted) {
         console.log('AuthContext: Timeout reached, stopping loading')
         setLoading(false)
       }
-    }, 10000)
+    }, 5000)
 
     const getUser = async () => {
       try {
-        console.log('AuthContext: Getting user...')
         const { data: { user }, error } = await supabase.auth.getUser()
         
         if (error) {
@@ -44,8 +43,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
           return
         }
-        
-        console.log('AuthContext: User found:', user)
         if (isMounted) {
           setUser(user)
           if (!user) {

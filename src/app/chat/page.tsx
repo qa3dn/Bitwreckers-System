@@ -118,7 +118,6 @@ export default function ChatPage() {
           table: 'messages'
         },
         (payload) => {
-          console.log('New message received:', payload)
           const newMessage = payload.new as Message
           
           // Check if message should be shown in current chat mode
