@@ -73,8 +73,7 @@ export default function MemberManagementPage() {
           member_id,
           department,
           role,
-          created_at,
-          updated_at
+          created_at
         `)
         .not('member_id', 'is', null)
         .order('created_at', { ascending: false })
@@ -91,7 +90,7 @@ export default function MemberManagementPage() {
         assigned_to: user.id,
         created_by: null,
         created_at: user.created_at,
-        updated_at: user.updated_at,
+        updated_at: user.created_at, // Use created_at as fallback
         user: {
           name: user.name,
           email: user.email
@@ -151,9 +150,7 @@ export default function MemberManagementPage() {
             email: `placeholder-${memberId}@example.com`,
             member_id: memberId,
             department: selectedDepartment,
-            role: 'member',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
+            role: 'member'
           })
 
         if (insertError) {
@@ -224,8 +221,7 @@ export default function MemberManagementPage() {
           name: editForm.name,
           email: editForm.email,
           department: editForm.department,
-          role: editForm.role,
-          updated_at: new Date().toISOString()
+          role: editForm.role
         })
         .eq('id', editingMember.id)
 
